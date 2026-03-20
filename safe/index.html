@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notlarım - Güvenli Not Defteri</title>
+    <style>
+        /* GENEL TASARIM */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; transition: 0.5s; background: #fff9c4; } /* Normalde sarımsı not kağıdı rengi */
+        
+        /* NORMAL MOD (YEM) */
+        #normal-app { padding: 20px; display: block; }
+        .note-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 5px solid #fbc02d; }
+        h1#decoy-title { color: #5d4037; cursor: pointer; user-select: none; } /* Gizli tetikleyici burada */
+
+        /* CYBER MOD (GERÇEK KASA) */
+        #cyber-vault { 
+            display: none; background: #0a0a0a; color: #00ff41; 
+            min-height: 100vh; padding: 20px; font-family: 'Courier New', monospace; 
+        }
+        .vault-input { background: #1a1a1a; border: 1px solid #00ff41; color: #00ff41; padding: 10px; width: 100%; margin-bottom: 10px; }
+        .save-btn { background: #00ff41; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; width: 100%; }
+        .hidden-item { border-bottom: 1px dashed #00ff41; padding: 10px 0; }
+        .alert { color: red; font-size: 12px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="normal-app">
+        <h1 id="decoy-title" onmousedown="startTimer()" onmouseup="clearTimer()" ontouchstart="startTimer()" ontouchend="clearTimer()">Notlarım</h1>
+        <p style="color: #888; font-size: 0.9em;">Son güncelleme: Bugün</p>
+        
+        <div class="note-card">
+            <strong>Market Listesi</strong>
+            <p>Ekmek, süt, yumurta, Ayvalık tostu ekmeği...</p>
+        </div>
+        <div class="note-card">
+            <strong>Sudenaz'a Not</strong>
+            <p>Akşam stüdyo planlarını konuşalım.</p>
+        </div>
+        <p style="text-align:center; color:#aaa; font-size: 12px; margin-top: 50px;">© 2026 Solenz Studio</p>
+    </div>
+
+    <div id="cyber-vault">
+        <h2>[ CYBER-SAFE VAULT ]</h2>
+        <p class="alert">> SİSTEM ŞİFRELENDİ. YALNIZCA YETKİLİ ERİŞİM.</p>
+        
+        <div id="vault-content">
+            <input type="text" id="pass-title" class="vault-input" placeholder="Platform (Örn: Instagram)">
+            <input type="text" id="pass-value" class="vault-input" placeholder="Kullanıcı Adı / Şifre">
+            <button class="save-btn" onclick="saveToVault()">VERİYİ ŞİFRELE VE KAYDET</button>
+            
+            <h3>KAYITLI ŞİFRELER</h3>
+            <div id="vault-list"></div>
+            
+            <button onclick="exitVault()" style="background:none; color:grey; border:none; margin-top:30px; cursor:pointer;">> Oturumu Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        // GİZLİ GİRİŞ MANTIĞI
+        let timer;
+        function startTimer() {
+            // Başlığa 3 saniye basılı tutunca kasa açılır
+            timer = setTimeout(() => {
+                document.getElementById('normal-app').style.display = 'none';
+                document.getElementById('cyber-vault').style.display = 'block';
+                document.body.style.background = '#0a0a0a';
+                loadVault(); // Kayıtlı şifreleri getir
+            }, 3000);
+        }
+        function clearTimer() { clearTimeout(timer); }
+
+        // KASA İŞLEMLERİ
+        function saveToVault() {
+            const title = document.getElementById('pass-title').value;
+            const value = document.getElementById('pass-value').value;
+            if(!title || !value) return;
+
+            const entry = { title, value };
+            let currentVault = JSON.parse(localStorage.getItem('cyberSafeData') || '[]');
+            currentVault.push(entry);
+            localStorage.setItem('cyberSafeData', JSON.stringify(currentVault));
+            
+            document.getElementById('pass-title').value = '';
+            document.getElementById('pass-value').value = '';
+            loadVault();
+        }
+
+        function loadVault() {
+            const list = document.getElementById('vault-list');
+            const data = JSON.parse(localStorage.getItem('cyberSafeData') || '[]');
+            list.innerHTML = data.map((item, index) => `
+                <div class="hidden-item">
+                    <strong>${item.title}:</strong> ${item.value} 
+                    <span onclick="deleteItem(${index})" style="color:red; cursor:pointer; float:right;">[SİL]</span>
+                </div>
+            `).join('');
+        }
+
+        function deleteItem(index) {
+            let data = JSON.parse(localStorage.getItem('cyberSafeData') || '[]');
+            data.splice(index, 1);
+            localStorage.setItem('cyberSafeData', JSON.stringify(data));
+            loadVault();
+        }
+
+        function exitVault() {
+            document.getElementById('normal-app').style.display = 'block';
+            document.getElementById('cyber-vault').style.display = 'none';
+            document.body.style.background = '#fff9c4';
+        }
+    </script>
+</body>
+  </html>
+  
